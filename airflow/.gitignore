@@ -1,5 +1,5 @@
 logs
 plugins
 __pycache__
-.secret.env
+.*.env
 playground.ipynb

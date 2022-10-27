@@ -81,6 +81,18 @@ services:
       retries: 5
     restart: always
 
+  postgres_client:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: local_user
+    volumes:
+      - postgres-db-volume-client:/var/lib/postgresql/data
+      - ./pg_init:/docker-entrypoint-initdb.d
+    restart: always 
+    env_file: .db.env
+    ports: 
+      - 5433:5432 
+
   redis:
     image: redis:latest
     ports:
@@ -267,3 +279,4 @@ services:
 
 volumes:
   postgres-db-volume:
+  postgres-db-volume-client:
