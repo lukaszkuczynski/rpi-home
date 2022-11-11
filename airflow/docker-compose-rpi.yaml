@@ -22,7 +22,9 @@ x-airflow-common:
   volumes:
     - ./dags:/root/airflow/dags
     - ./logs:/root/airflow/logs
-    - ./plugins:/opt/airflow/plugins
+    - ./plugins:/root/airflow/plugins
+    - ./scripts:/root/scripts
+  privileged: true
 #  user: "${AIRFLOW_UID:-50000}:0"
  
 services:
@@ -30,9 +32,24 @@ services:
     image: lukrpihome/airflow
     ports: 
     - 8080:8080
-    entrypoint: ["airflow", "standalone"]
+    entrypoint: /bin/bash
+    command:
+    - airflow webserver --port 8080
+    - airflow scheduler
 #    privileged: true
     <<: *airflow-common
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+
+  airflow-init:
+    image: lukrpihome/airflow
+    <<: *airflow-common
+    entrypoint: /bin/bash
+    # yamllint disable rule:line-length
+    command:
+      - /root/scripts/airflow-init-rpi.sh
+
 
 volumes:
   postgres-db-volume:

@@ -13,8 +13,11 @@ runti:
 	docker run -p 8080:8080 --privileged --rm -ti lukrpihome/airflow /bin/bash
 
 up:
-	docker-compose -f docker-compose-rpi.yaml up -d
+	docker-compose -f docker-compose-rpi.yaml up
 
+down:
+	docker-compose -f docker-compose-rpi.yaml down
+	docker-compose -f docker-compose-rpi.yaml rm -f
 logs:
 	docker-compose -f docker-compose-rpi.yaml logs -f
 
