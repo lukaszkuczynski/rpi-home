@@ -7,10 +7,10 @@ dbclean:
 
 
 build:
-	docker build . -t lukrpihome/airflow
+	docker build . -t lukrpihome/airflow:arm7
 
-build_arm:
-	docker build . -t lukrpihome/airflow_arm64 -f Dockerfile_arm64 
+build_arm64:
+	docker build . -t lukrpihome/airflow:arm64 -f Dockerfile_arm64 
 
 runti:
 	docker run -p 8080:8080 --privileged --rm -ti lukrpihome/airflow /bin/bash
