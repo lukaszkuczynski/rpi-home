@@ -9,9 +9,9 @@ x-airflow-common:
  #    build: .
   environment:
     &airflow-common-env
-#    AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-#    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+    # AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
 #    AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
@@ -24,6 +24,10 @@ x-airflow-common:
     - ./plugins:/root/airflow/plugins
     - ./scripts:/root/scripts
   privileged: true
+  depends_on:
+    &airflow-common-depends-on
+   postgres:
+      condition: service_healthy
 #  user: "${AIRFLOW_UID:-50000}:0"
  
 services:
@@ -43,16 +47,35 @@ services:
     ports:
     - 5434:5432
 
-  airflow-all:
+  postgres_client:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: local_user
+    volumes:
+      - postgres-db-volume-client:/var/lib/postgresql/data
+      - ./pg_init:/docker-entrypoint-initdb.d
+    restart: always 
+    env_file: .db.env
+    ports: 
+      - 5433:5432 
+
+  airflow-web:
     ports: 
     - 8080:8080
-    entrypoint: /bin/bash
-    command:
-      - /root/scripts/airflow-startup.sh
+    entrypoint: [ "bash", "-c", "airflow webserver --port 8080"]
     <<: *airflow-common
     depends_on:
       airflow-init:
         condition: service_completed_successfully
+
+  airflow-scheduler:
+    entrypoint: [ "bash", "-c", "airflow scheduler"]
+    <<: *airflow-common
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    env_file:
+      - .secret.env  
 
   airflow-init:
     <<: *airflow-common
@@ -63,3 +86,4 @@ services:
 
 volumes:
   postgres-db-volume:
+  postgres-db-volume-client:

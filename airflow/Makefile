@@ -1,10 +1,10 @@
 .PHONY: logs
 
 dbclean:
-	docker-compose stop postgres_client
+	docker-compose rm -f postgres  
+	docker volume rm airflow_postgres-db-volume
 	docker-compose rm -f postgres_client  
 	docker volume rm airflow_postgres-db-volume-client
-
 
 build:
 	docker build . -t lukrpihome/airflow:arm7
@@ -16,13 +16,11 @@ runti:
 	docker run -p 8080:8080 --privileged --rm -ti lukrpihome/airflow /bin/bash
 
 up:
-	docker-compose  up
+	docker-compose up -d
 
 down:
-	docker-compose  down
-	docker-compose  rm -f
-logs:
-	docker-compose  logs -f
+	docker-compose down
+	docker-compose rm -f
 
-exec:
-	docker-compose  exec -ti standalone /bin/bash
+logs:
+	docker-compose logs -f
