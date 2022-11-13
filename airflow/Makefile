@@ -1,6 +1,6 @@
 .PHONY: logs
 
-dbclean:
+dbclean: down
 	docker-compose rm -f postgres  
 	docker volume rm airflow_postgres-db-volume
 	docker-compose rm -f postgres_client  

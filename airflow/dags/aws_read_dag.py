@@ -5,6 +5,7 @@ from airflow import DAG
 import datetime
 import json
 from airflow.hooks.postgres_hook import PostgresHook
+from airflow.providers.postgres.operators.postgres import PostgresOperator
 
 DAG_NAME = "aws_sample_dag"
 
@@ -37,14 +38,53 @@ with DAG(
     dag_id=DAG_NAME,
     default_args={"retries": 0},
     start_date=datetime.datetime(2022, 1, 1),
-    schedule="@once",
-    tags=["example"],
+    schedule="@daily",
+    tags=["finops"],
+    catchup=False,
 ) as dag:
 
     get_data = PythonOperator(python_callable=get_aws_costs, task_id="get_costs")
+
+    move_raw_data_to_conform = PostgresOperator(
+        task_id="move_raw_data_to_conform",
+        postgres_conn_id="postgres_client",
+        sql="""
+            with raw_data_source as (
+                select CAST(
+                        json_array_elements(raw_data->'ResultsByTime')->'TimePeriod'->>'Start' AS DATE
+                    ) as date_start,
+                    CAST(
+                        json_array_elements(raw_data->'ResultsByTime')->'TimePeriod'->>'End' AS DATE
+                    ) as date_end,
+                    json_array_elements(
+                        json_array_elements(raw_data->'ResultsByTime')->'Groups'
+                    )->'Keys'->>0 as resource_group,
+                    CAST(
+                        json_array_elements(
+                            json_array_elements(raw_data->'ResultsByTime')->'Groups'
+                        )->'Metrics'->'BlendedCost'->>'Amount' AS FLOAT
+                    ) as amount,
+                    'aws' as source_system
+                from raw_data
+            )
+            insert into conform_spendings(
+                    start_date,
+                    end_date,
+                    resource_group,
+                    amount,
+                    source_system
+                )
+            select date_start,
+                date_end,
+                resource_group,
+                amount,
+                source_system
+            from raw_data_source
+          """,
+    )
 
     end = EmptyOperator(
         task_id="end",
     )
 
-    get_data >> end
+    get_data >> move_raw_data_to_conform >> end
