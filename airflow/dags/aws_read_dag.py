@@ -10,12 +10,15 @@ from airflow.providers.postgres.operators.postgres import PostgresOperator
 DAG_NAME = "aws_sample_dag"
 
 
-def get_aws_costs():
+def get_aws_costs(**kwargs):
     hook = AwsBaseHook(client_type="ce")
     pg_hook = PostgresHook(postgres_conn_id="postgres_client")
     ce_client = hook.get_conn()
+    execution_date = kwargs["execution_date"]
+    start_date_str = execution_date.replace(day=1).strftime("%Y-%m-%d")
+    end_date_str = execution_date.strftime("%Y-%m-%d")
     cost_usage = ce_client.get_cost_and_usage(
-        TimePeriod={"Start": "2022-10-02", "End": "2022-10-23"},
+        TimePeriod={"Start": start_date_str, "End": end_date_str},
         Granularity="DAILY",
         Filter={"Dimensions": {"Key": "REGION", "Values": ["eu-central-1"]}},
         Metrics=["BlendedCost"],
@@ -43,7 +46,11 @@ with DAG(
     catchup=False,
 ) as dag:
 
-    get_data = PythonOperator(python_callable=get_aws_costs, task_id="get_costs")
+    get_data = PythonOperator(
+        python_callable=get_aws_costs,
+        task_id="get_costs",
+        provide_context=True,
+    )
 
     move_raw_data_to_conform = PostgresOperator(
         task_id="move_raw_data_to_conform",
