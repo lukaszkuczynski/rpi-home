@@ -3,3 +3,4 @@ plugins
 __pycache__
 .*.env
 playground.ipynb
+key.json

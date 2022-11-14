@@ -2,3 +2,4 @@ apache-airflow
 psycopg2
 apache-airflow-providers-amazon
 apache-airflow-providers-postgres
+apache-airflow[google]

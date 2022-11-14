@@ -11,6 +11,7 @@ x-airflow-common:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT: google-cloud-platform://?extra__google_cloud_platform__key_path=%2Fkeys%2Fkey.json&extra__google_cloud_platform__scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloud-platform&extra__google_cloud_platform__project=${GOOGLE_CLOUD_PROJECT}&extra__google_cloud_platform__num_retries=5
     # AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
 #    AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
     AIRFLOW__CORE__FERNET_KEY: ''
@@ -23,6 +24,7 @@ x-airflow-common:
     - ./logs:/root/airflow/logs
     - ./plugins:/root/airflow/plugins
     - ./scripts:/root/scripts
+    - ./keys:/keys
   privileged: true
   depends_on:
     &airflow-common-depends-on
