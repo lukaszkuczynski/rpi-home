@@ -16,7 +16,7 @@ runti:
 	docker run -p 8080:8080 --privileged --rm -ti lukrpihome/airflow /bin/bash
 
 up:
-	docker-compose up -d
+	export AIRFLOW_IMAGE_NAME=lukrpihome/airflow:arm7 && docker-compose up -d
 
 down:
 	docker-compose down
