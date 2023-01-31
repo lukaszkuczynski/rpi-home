@@ -1,30 +1,44 @@
 from airflow import DAG
 import datetime
-from airflow.contrib.operators.bigquery_get_data import BigQueryGetDataOperator
 from airflow.operators.empty import EmptyOperator
-from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
 from airflow.models import Variable
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.operators.python import PythonOperator
+import requests
+import json
 
-DAG_NAME = "google_cloud_cost"
-DATASET = "america_health_rankings"
-TABLE = "ahr"
-
+SOURCE_SYSTEM_IDENTIFIER = 'gcloud'
+DAG_NAME = 'gcloud_cost_reader_dag'
 
 def curr_date_str_filename():
     return f"{datetime.datetime.now().strftime('%Y%m%d')}.csv"
 
 
-def get_google_cloud_costs(**kwargs):
-    hook = BigQueryHook(location="europe-central2")
+def get_last_file(**kwargs):
+    root_url = Variable.get("FILESERVER_URL")
+    listing_url = root_url
+    resp = requests.get(listing_url)
+    print(f"File listing : {resp.content}")
+    # to replace with currdate and path..
+    filepath = "folder1/000000000000.json"
+    file_url = f"{root_url}?filename={filepath}"
+    file_resp = requests.get(file_url)
+    raw_content = file_resp.text
+    print("received content...")
+    print(raw_content)
+    rows = raw_content.split('\n')
+    elements = [json.loads(row) for row in rows if len(row)>0 ]
     pg_hook = PostgresHook(postgres_conn_id="postgres_client")
-    execution_date = kwargs["execution_date"]
-    start_date_str = execution_date.replace(day=1).strftime("%Y-%m-%d")
-    end_date_str = execution_date.strftime("%Y-%m-%d")
-    sql_query = "SELECT * FROM datasettest.tab LIMIT 1000;"
-    records = hook.get_records(sql_query)
-    print(records)
+    pg_conn = pg_hook.get_conn()
+    cursor = pg_conn.cursor()
+    cursor.execute(
+        f"""
+            INSERT INTO raw_data(raw_data, source_system)
+            VALUES('{json.dumps(elements)}','{SOURCE_SYSTEM_IDENTIFIER}')
+        """
+    )
+    pg_conn.commit()
+    
 
 
 with DAG(
@@ -36,16 +50,22 @@ with DAG(
     catchup=False,
 ) as dag:
 
-    get_data = PythonOperator(
-        python_callable=get_google_cloud_costs,
-        task_id="get_costs",
+    download_todays_export = PythonOperator(
+        python_callable=get_last_file,
+        task_id="get_last_file",
         provide_context=True,
     )
+
+    # get_data = PythonOperator(
+    #     python_callable=get_google_cloud_costs,
+    #     task_id="get_costs",
+    #     provide_context=True,
+    # )
 
     end = EmptyOperator(
         task_id="end",
     )
 
-    get_data >> end
+    download_todays_export >> end
 
 # apply leastprivilege for this user https://cloud.google.com/bigquery/docs/exporting-data

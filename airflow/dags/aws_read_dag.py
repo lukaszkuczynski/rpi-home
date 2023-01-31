@@ -7,7 +7,8 @@ import json
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 
-DAG_NAME = "aws_sample_dag"
+DAG_NAME = "aws_cost_reader_dag"
+SOURCE_SYSTEM_IDENTIFIER = 'aws'
 
 
 def get_aws_costs(**kwargs):
@@ -29,8 +30,8 @@ def get_aws_costs(**kwargs):
     cost_usage_str = json.dumps(cost_usage)
     cursor.execute(
         f"""
-            INSERT INTO raw_data(raw_data)
-            VALUES('{cost_usage_str}')
+            INSERT INTO raw_data(raw_data, source_system)
+            VALUES('{cost_usage_str}','{SOURCE_SYSTEM_IDENTIFIER}')
         """
     )
     pg_conn.commit()

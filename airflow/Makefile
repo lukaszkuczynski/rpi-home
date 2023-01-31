@@ -18,6 +18,9 @@ runti:
 up:
 	export AIRFLOW_IMAGE_NAME=lukrpihome/airflow:arm7 && docker-compose up -d
 
+macup:
+	export AIRFLOW_IMAGE_NAME=lukrpihome/airflow:arm64 && docker-compose up -d	
+
 down:
 	docker-compose down
 	docker-compose rm -f
