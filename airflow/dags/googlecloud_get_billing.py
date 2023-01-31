@@ -4,6 +4,7 @@ from airflow.operators.empty import EmptyOperator
 from airflow.models import Variable
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.operators.python import PythonOperator
+from airflow.providers.postgres.operators.postgres import PostgresOperator
 import requests
 import json
 
@@ -19,8 +20,8 @@ def get_last_file(**kwargs):
     listing_url = root_url
     resp = requests.get(listing_url)
     print(f"File listing : {resp.content}")
-    # to replace with currdate and path..
-    filepath = "folder1/000000000000.json"
+    filepath = f"detailed/{datetime.datetime.strftime(datetime.datetime.now()-datetime.timedelta(days=1), '%Y%m%d')}000000000000.json"
+    print(f"Filepath to be fetched is {filepath}")
     file_url = f"{root_url}?filename={filepath}"
     file_resp = requests.get(file_url)
     raw_content = file_resp.text
@@ -56,16 +57,45 @@ with DAG(
         provide_context=True,
     )
 
-    # get_data = PythonOperator(
-    #     python_callable=get_google_cloud_costs,
-    #     task_id="get_costs",
-    #     provide_context=True,
-    # )
+    move_raw_data_to_conform = PostgresOperator(
+        task_id="move_raw_data_to_conform",
+        postgres_conn_id="postgres_client",
+        sql="""
+            with json_rows as (select json_array_elements(raw_data.raw_data) as row
+                            from raw_data
+                            where source_system = 'gcloud'),
+            raw_data_source as (
+                select
+                    to_timestamp(row ->> 'usage_start_time', 'YYYY-MM-DDXHH24:MI:SS.MS') usage_start_time,
+                    to_timestamp(row ->> 'usage_end_time', 'YYYY-MM-DDXHH24:MI:SS.MS') usage_end_time,
+                    row->'service'->>'description' as service_description,
+                    cast(row->>'cost' as float) as cost,
+                    row->'project'->>'id' as project_id
+                from json_rows
+            )
+            insert into conform_spendings(
+                    start_date,
+                    end_date,
+                    resource_group,
+                    amount,
+                    tags,
+                    source_system
+                )
+            select
+                usage_start_time,
+                usage_end_time,
+                service_description,
+                cost,    
+                project_id,
+                'gcloud'
+            from raw_data_source;
+          """,
+    )
 
     end = EmptyOperator(
         task_id="end",
     )
 
-    download_todays_export >> end
+    download_todays_export >> move_raw_data_to_conform >> end
 
 # apply leastprivilege for this user https://cloud.google.com/bigquery/docs/exporting-data
