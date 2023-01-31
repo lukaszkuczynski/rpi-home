@@ -20,7 +20,8 @@ def get_last_file(**kwargs):
     listing_url = root_url
     resp = requests.get(listing_url)
     print(f"File listing : {resp.content}")
-    filepath = f"detailed/{datetime.datetime.strftime(datetime.datetime.now()-datetime.timedelta(days=1), '%Y%m%d')}000000000000.json"
+    execution_date = kwargs["execution_date"]
+    filepath = f"detailed/{datetime.datetime.strftime(execution_date-datetime.timedelta(days=1), '%Y%m%d')}000000000000.json"
     print(f"Filepath to be fetched is {filepath}")
     file_url = f"{root_url}?filename={filepath}"
     file_resp = requests.get(file_url)
