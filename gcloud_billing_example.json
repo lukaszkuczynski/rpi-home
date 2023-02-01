@@ -1,0 +1,52 @@
+[
+    {
+        "billing_account_id": "IDIDID",
+        "service": {
+            "id": "1111-1111-1111",
+            "description": "Cloud Scheduler"
+        },
+        "sku": {
+            "id": "A5D6-1111-1111",
+            "description": "Jobs"
+        },
+        "usage_start_time": "2023-01-23T08:00:00+00:00",
+        "usage_end_time": "2023-01-23T09:00:00+00:00",
+        "project": {
+            "id": "project_name",
+            "number": "project_no",
+            "name": "project_name",
+            "labels": [],
+            "ancestors": [
+                {
+                    "resource_name": "projects/project_no",
+                    "display_name": "display_name"
+                }
+            ]
+        },
+        "labels": [],
+        "system_labels": [],
+        "location": {
+            "location": "europe-central2",
+            "country": "PL",
+            "region": "europe-central2"
+        },
+        "resource": {},
+        "tags": [],
+        "export_time": "2023-01-25T03:16:47.34+00:00",
+        "cost": 0.156409,
+        "currency": "PLN",
+        "currency_conversion_rate": 4.407899999994763,
+        "usage": {
+            "amount": 11,
+            "unit": "requests",
+            "amount_in_pricing_units": 11,
+            "pricing_unit": "count"
+        },
+        "credits": [],
+        "invoice": {
+            "month": "202301"
+        },
+        "cost_type": "regular",
+        "adjustment_info": {}
+    }
+]

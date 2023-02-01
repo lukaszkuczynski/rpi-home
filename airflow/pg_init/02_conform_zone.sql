@@ -6,7 +6,9 @@ CREATE TABLE conform_spendings (
     end_date DATE,
     resource_group varchar(40),
     amount FLOAT,
-    source_system VARCHAR(10)
+    source_system VARCHAR(10),
+    tags varchar(20),
+    region varchar(20)
 );
 CREATE OR REPLACE FUNCTION trigger_set_timestamp() RETURNS TRIGGER AS $$ BEGIN NEW.updated_at = NOW();
 RETURN NEW;

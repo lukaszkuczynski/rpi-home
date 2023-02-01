@@ -21,7 +21,7 @@ def get_last_file(**kwargs):
     resp = requests.get(listing_url)
     print(f"File listing : {resp.content}")
     execution_date = kwargs["execution_date"]
-    filepath = f"detailed/{datetime.datetime.strftime(execution_date-datetime.timedelta(days=1), '%Y%m%d')}000000000000.json"
+    filepath = f"folder1/{datetime.datetime.strftime(execution_date-datetime.timedelta(days=1), '%Y%m%d')}000000000000.json"
     print(f"Filepath to be fetched is {filepath}")
     file_url = f"{root_url}?filename={filepath}"
     file_resp = requests.get(file_url)
@@ -71,7 +71,8 @@ with DAG(
                     to_timestamp(row ->> 'usage_end_time', 'YYYY-MM-DDXHH24:MI:SS.MS') usage_end_time,
                     row->'service'->>'description' as service_description,
                     cast(row->>'cost' as float) as cost,
-                    row->'project'->>'id' as project_id
+                    row->'project'->>'id' as project_id,
+                    row->'location'->>'region' as region
                 from json_rows
             )
             insert into conform_spendings(
@@ -80,7 +81,8 @@ with DAG(
                     resource_group,
                     amount,
                     tags,
-                    source_system
+                    source_system,
+                    region
                 )
             select
                 usage_start_time,
@@ -88,7 +90,8 @@ with DAG(
                 service_description,
                 cost,    
                 project_id,
-                'gcloud'
+                'gcloud',
+                region
             from raw_data_source;
           """,
     )

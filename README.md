@@ -11,3 +11,8 @@ POSTGRES_DB=<pgdbname>
 AIRFLOW_CONN_AWS_DEFAULT=aws://user:key
 AIRFLOW_CONN_POSTGRES_CLIENT=postgres://user:<pg_password_goes_here>@postgres_client:5432/<pgdbname>
 ```
+
+
+todo:
+- aws get region by cli
+- create chart from pg, streamlit?
