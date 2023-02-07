@@ -91,8 +91,30 @@ with DAG(
           """,
     )
 
+    move_to_clean = PostgresOperator(
+        task_id="move_to_clean",
+        postgres_conn_id="postgres_client",        
+        sql = """
+            with dedup_conform_spendings as (
+                with conform_plus_rowno as (
+                    select start_date, end_date, resource_group, amount, source_system, tags, coalesce(region, 'region') as region,
+                        row_number() over (partition by start_date, resource_group, source_system, region order by updated_at desc) rowno
+                    from conform_spendings
+                )
+                select *
+                from conform_plus_rowno
+                where rowno=1
+            )
+            insert into clean_spendings(start_date, end_date, resource_group, amount, source_system, tags, region)
+            select start_date, end_date, resource_group, amount, source_system, tags, region
+            from dedup_conform_spendings
+            on conflict (start_date, resource_group, source_system, region) do update
+            set amount=excluded.amount;
+        """
+    )
+
     end = EmptyOperator(
         task_id="end",
     )
 
-    get_data >> move_raw_data_to_conform >> end
+    get_data >> move_raw_data_to_conform >> move_to_clean >> end
