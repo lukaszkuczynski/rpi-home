@@ -48,7 +48,7 @@ with DAG(
     dag_id=DAG_NAME,
     default_args={"retries": 0},
     start_date=datetime.datetime(2022, 1, 1),
-    schedule="@daily",
+    schedule="0 2 * * *",
     tags=["finops"],
     catchup=False,
 ) as dag:

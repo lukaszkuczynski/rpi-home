@@ -86,6 +86,12 @@ services:
     command:
       - /root/scripts/airflow-init-rpi.sh
 
+  grafana:
+    image: grafana/grafana
+    ports:
+    - 3000:3000
+
+
 
 volumes:
   postgres-db-volume:
