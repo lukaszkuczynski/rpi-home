@@ -77,7 +77,7 @@ with DAG(
                             json_array_elements(raw_data->'ResultsByTime')->'Groups'
                         )->'Metrics'->'BlendedCost'->>'Amount' AS FLOAT
                     ) as amount,
-                    '{SOURCE_SYSTEM_IDENTIFIER}' as source_system
+                    source_system
                 from raw_data
             )
             insert into conform_spendings(
@@ -101,12 +101,13 @@ with DAG(
     move_to_clean = PostgresOperator(
         task_id="move_to_clean",
         postgres_conn_id="postgres_client",
-        sql="""
+        sql=f"""
             with dedup_conform_spendings as (
                 with conform_plus_rowno as (
                     select start_date, end_date, resource_group, amount, source_system, tags, coalesce(region, 'region') as region,
                         row_number() over (partition by start_date, resource_group, source_system, region order by updated_at desc) rowno
                     from conform_spendings
+                    where source_system = '{SOURCE_SYSTEM_IDENTIFIER}'
                 )
                 select *
                 from conform_plus_rowno

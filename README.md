@@ -14,7 +14,6 @@ AIRFLOW_CONN_POSTGRES_CLIENT=postgres://user:<pg_password_goes_here>@postgres_cl
 
 
 todo:
-- aws get region by cli
 - adjust timestart for airflow for 1 day forward?
 
 
