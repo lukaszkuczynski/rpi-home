@@ -7,12 +7,12 @@ import json
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 
-DAG_NAME = "aws_cost_reader_dag_personal"
-SOURCE_SYSTEM_IDENTIFIER = "aws_my"
+DAG_NAME = "aws_cost_reader_dag_company"
+SOURCE_SYSTEM_IDENTIFIER = "aws_second"
 
 
 def get_aws_costs(**kwargs):
-    hook = AwsBaseHook(client_type="ce")
+    hook = AwsBaseHook(client_type="ce", aws_conn_id="aws_second")
     pg_hook = PostgresHook(postgres_conn_id="postgres_client")
     ce_client = hook.get_conn()
     execution_date = kwargs["execution_date"]
@@ -59,7 +59,7 @@ with DAG(
         task_id="move_raw_data_to_conform",
         postgres_conn_id="postgres_client",
         sql=f"""
-                with raw_data_source as (
+            with raw_data_source as (
                 select CAST(
                         json_array_elements(raw_data->'ResultsByTime')->'TimePeriod'->>'Start' AS DATE
                     ) as date_start,

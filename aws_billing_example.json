@@ -3,56 +3,64 @@
         {
             "Type": "DIMENSION",
             "Key": "SERVICE"
+        },
+        {
+            "Type": "DIMENSION",
+            "Key": "REGION"
         }
     ],
     "ResultsByTime": [
         {
             "TimePeriod": {
-                "Start": "2023-01-01",
-                "End": "2023-01-02"
+                "Start": "2023-03-08",
+                "End": "2023-03-09"
             },
             "Total": {},
             "Groups": [
                 {
                     "Keys": [
-                        "AWS Lambda"
+                        "AWS Config",
+                        "eu-west-1"
                     ],
                     "Metrics": {
                         "BlendedCost": {
-                            "Amount": "0",
+                            "Amount": "0.003",
                             "Unit": "USD"
                         }
                     }
                 },
                 {
                     "Keys": [
-                        "Amazon DynamoDB"
+                        "AWS Secrets Manager",
+                        "eu-central-1"
                     ],
                     "Metrics": {
                         "BlendedCost": {
-                            "Amount": "0",
+                            "Amount": "0.0387096768",
                             "Unit": "USD"
                         }
                     }
                 },
                 {
                     "Keys": [
-                        "Amazon Simple Storage Service"
+                        "Amazon Relational Database Service",
+                        "eu-central-1"
                     ],
                     "Metrics": {
                         "BlendedCost": {
-                            "Amount": "0.0045347578",
+                            "Amount": "0.0006116274",
                             "Unit": "USD"
                         }
                     }
                 },
                 {
                     "Keys": [
-                        "AmazonCloudWatch"
+                        "Amazon Relational Database Service",
+                        "eu-west-1"
                     ],
                     "Metrics": {
                         "BlendedCost": {
-                            "Amount": "0",
+                            "Amount": "0.011879489",
                             "Unit": "USD"
                         }
                     }
@@ -61,18 +69,5 @@
             "Estimated": true
         }
     ],
-    "DimensionValueAttributes": [],
-    "ResponseMetadata": {
-        "RequestId": "zzzz",
-        "HTTPStatusCode": 200,
-        "HTTPHeaders": {
-            "date": "Wed, 01 Feb 2023 13:02:53 GMT",
-            "content-type": "application/x-amz-json-1.1",
-            "content-length": "zzzzz",
-            "connection": "keep-alive",
-            "x-amzn-requestid": "11111",
-            "cache-control": "no-cache"
-        },
-        "RetryAttempts": 0
-    }
+    "DimensionValueAttributes": []
 }

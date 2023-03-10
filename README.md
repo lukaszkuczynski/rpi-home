@@ -15,4 +15,7 @@ AIRFLOW_CONN_POSTGRES_CLIENT=postgres://user:<pg_password_goes_here>@postgres_cl
 
 todo:
 - aws get region by cli
-- create chart from pg, streamlit?
+- adjust timestart for airflow for 1 day forward?
+
+
+ aws ce get-cost-and-usage --time-period '{"Start":"2023-03-08", "End":"2023-03-09"}' --granularity DAILY --metrics BLENDED_COST --group-by '[{"Type": "DIMENSION", "Key": "REGION"},{"Type": "DIMENSION", "Key":"SERVICE"}]'
